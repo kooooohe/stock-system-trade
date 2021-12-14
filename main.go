@@ -28,14 +28,13 @@ func (d DMA) CurrentAvarageWithin(du int, b int) int {
 	return 0
 }
 
-func main() {
-	tFiles := []string{}
-	tDir := "./data/6103"
-	err := filepath.Walk(tDir, func(path string, info fs.FileInfo, err error) error {
+func targetFiles(tDir string) (tFiles []string, err error) {
+	err = filepath.Walk(tDir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
 		}
+		// skip to get the target dir self name
 		if path == tDir {
 			return nil
 		}
@@ -43,10 +42,15 @@ func main() {
 		return nil
 	})
 	if err != nil {
-		fmt.Println(err)
-		return
+		return  nil, err
 	}
-	fmt.Println(tFiles)
+	return 
+}
+
+func main() {
+	// tDir := "./data/6103"
+	ns, err:= targetFiles("./data/6103")
+	fmt.Println(ns)
 	return
 
 	f, err := os.Open("./data/6103/6103_2015.csv")

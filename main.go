@@ -28,7 +28,6 @@ func (d DMA) CurrentAvarageWithin(du int, b int) int {
 	return 0
 }
 
-
 func main() {
 	tFiles := []string{}
 	tDir := "./data/6103"
@@ -37,10 +36,10 @@ func main() {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
 		}
-		if path == tDir { 
+		if path == tDir {
 			return nil
 		}
-		tFiles= append(tFiles, path)
+		tFiles = append(tFiles, path)
 		return nil
 	})
 	if err != nil {

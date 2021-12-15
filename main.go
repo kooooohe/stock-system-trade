@@ -33,7 +33,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	fmt.Println(ns)
-	vs, err := systemtrade.CandleSticks(ns)
+	vs, err := systemtrade.MakeCandleSticks(ns)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,4 +41,5 @@ func main() {
 	for _, v := range vs {
 		fmt.Println(v.Date())
 	}
+	vs.DMA(10)
 }

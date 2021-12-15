@@ -21,6 +21,17 @@ func (c CandleStick) Date() time.Time {
 	return c.date
 }
 
+type CandleSticks []CandleStick
+
+func (c CandleSticks) DMA(d int)(r float64) {
+	size := len(c) -1
+	for i:=0; i<d; i++ {
+		println(c[size-i].end)
+	}
+	return 
+}
+
+
 type DMA struct {
 	candleSticks []CandleStick
 }
@@ -32,8 +43,8 @@ func (d DMA) CurrentAvarageWithin(du int, b int) int {
 	return 0
 }
 
-func CandleSticks(paths []string) ([]CandleStick, error) {
-	rc := []CandleStick{}
+func MakeCandleSticks(paths []string) (CandleSticks, error) {
+	rc := CandleSticks{}
 	for _, v := range paths {
 		f, err := os.Open(v)
 		if err != nil {

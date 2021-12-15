@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -73,19 +74,22 @@ func CandleSticks(paths []string) ([]CandleStick, error) {
 			if err != nil {
 				return nil, err
 			}
-			// 日付	始値	高値	安値	終値	出来高	終値調整値
+			// 日付,始値,高値,安値,終値,出来高,終値,調整値
+			d := strings.Replace(recode[0],"-","/",-1)
+			layout := "2006/01/02"
+			dt, _ :=  time.Parse(layout, d)
 			s, _ := strconv.Atoi(recode[1])
 			h, _ := strconv.Atoi(recode[2])
 			l, _ := strconv.Atoi(recode[3])
 			e, _ := strconv.Atoi(recode[4])
 			c := CandleStick{
-				// TODO date
+				date: dt,
 				start: s,
 				high:  h,
 				low:   l,
 				end:   e,
 			}
-			fmt.Printf("%T: %v\n", recode, recode)
+			// fmt.Printf("%T: %v\n", recode, recode)
 			rc = append(rc, c)
 		}
 
@@ -106,6 +110,6 @@ func main() {
 	}
 	// fmt.Println(vs)
 	for _, v := range vs {
-		fmt.Println(v)
+		fmt.Println(v.date)
 	}
 }

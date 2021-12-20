@@ -49,25 +49,35 @@ const (
 type Position struct {
 	t     positionType
 	price int
-	Lc float64
-	Lp float64 //指値
+	Lc    float64
+	Lp    float64 //指値
 }
 
-func (po *Position)Buy(p int) {
-	po.price =p
+func (po *Position) Buy(p int) {
+	po.price = p
 	po.t = buy
 }
-func (po *Position)ShortSell(p int) {
+func (po *Position) ShortSell(p int) {
 	po.t = sell
 	po.price = p
 }
 
-func (po *Position) Sell(c CandleStick) int {
+func (po *Position) Sell(c CandleStick) (int, float64) {
+	// todo あとで
 	po.t = nothing
-	if float64(c.Start)<= float64(po.price)* (1 - po.Lc) {
-		return c.Start - po.price
+
+	// LC
+	if float64(c.Start) <= float64(po.price)*(1-po.Lc) {
+		return c.Start - po.price, -(1.0 - float64(c.Start)/float64(po.price))
 	}
-	return int(math.Ceil(float64(po.price) * po.Lc))
+
+	if float64(c.Low) <= float64(po.price)*(1-po.Lc) {
+	  return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc
+	}
+
+
+
+	return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc
 	// TODO 利確のときも一緒にする？
 	// TODO 割合を出す？数値だけだと、具体的な期待値がでない
 }
@@ -86,8 +96,6 @@ func (po Position) IsSelling() bool {
 func (po Position) Price() int {
 	return po.price
 }
-
-
 
 type DMA struct {
 	candleSticks []CandleStick

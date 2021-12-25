@@ -33,6 +33,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 	p := 0
 
 	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
+	count := 0
+	sum := 0.0
 	for i, v := range cs {
 		// for DMA
 		if skipc > 0 || v.Date.Before(sDate) {
@@ -54,19 +56,20 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 			_, per, ok := po.Sell(v)
 			if ok {
 				println("SELL END")
-		 		fmt.Println(v.Date)
+				fmt.Println(v.Date)
 				fmt.Println(per)
+				sum += per
 			}
 			continue
 		}
 		if po.IsSelling() {
 			_, per, ok := po.BuyBack(v)
-			fmt.Println("kohe")
-			fmt.Printf("%#v\n",v)
+
 			if ok {
 				println("BUYBUCK END")
-		 		fmt.Println(v.Date)
+				fmt.Println(v.Date)
 				fmt.Println(per)
+				sum += per
 			}
 			continue
 		}
@@ -79,6 +82,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				}
 				po.Buy(p)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
+				count++
 			}
 		}
 
@@ -90,10 +94,14 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				}
 				po.ShortSell(p)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
+				count++
 			}
 		}
 
 	}
+
+	fmt.Printf("count: %v\n", count)
+	fmt.Printf("sum: %v\n", sum)
 	// vs.DMA(10)
 }
 

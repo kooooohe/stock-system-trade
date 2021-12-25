@@ -2,7 +2,7 @@ package systemtrade
 
 import (
 	"encoding/csv"
-	"fmt"
+	_ "fmt"
 	"io"
 	"math"
 	"os"
@@ -80,7 +80,7 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 	// PROFIT
 	if float64(c.Start) >= po.profitPrice() {
 		po.t = nothing
-		return c.Start - po.price, (1.0 - float64(c.Start)/float64(po.price)), true
+		return c.Start - po.price, (float64(c.Start)/float64(po.price) - 1), true
 	}
 
 	// PROFIT
@@ -92,11 +92,11 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 	return 0, 0.0, false
 }
 
-func (po *Position) BuyBack(c CandleStick) (int, float64, bool){
+func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
 	// LC
 	if float64(c.Start) >= po.lossCutPrice() {
 		po.t = nothing
-		return -(c.Start - po.price), -(1.0 - float64(po.price)/float64(c.Start)),true
+		return -(c.Start - po.price), -(1.0 - float64(po.price)/float64(c.Start)), true
 	}
 
 	// LC
@@ -108,7 +108,7 @@ func (po *Position) BuyBack(c CandleStick) (int, float64, bool){
 	// PROFIT
 	if float64(c.Start) <= po.profitPrice() {
 		po.t = nothing
-		return -(c.Start - po.price), (1.0 - float64(po.price)/float64(c.Start)), true
+		return -(c.Start - po.price), (float64(po.price)/float64(c.Start) - 1), true
 	}
 
 	// PROFIT

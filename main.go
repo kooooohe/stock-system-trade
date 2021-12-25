@@ -39,9 +39,9 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 			skipc--
 			continue
 		}
-		d := cs.DMA(10, i)
-		fmt.Printf("%v: ", v.Date)
-		fmt.Println(d)
+		// d := cs.DMA(10, i)
+		// fmt.Printf("%v: ", v.Date)
+		// fmt.Println(d)
 		// fmt.Println(v.Date())
 		//TODO 10DMAが上向きで、株価のしたひげでも一回でもDMA以下にあって、次の日が高値を超えたら 3% 7%
 
@@ -51,12 +51,23 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		yesterday := cs[i-1]
 
 		if po.IsBuying() {
-			if float64(v.Low) <= float64(po.Price()) * (1 -po.Lc) {
+			_, per, ok := po.Sell(v)
+			if ok {
+				println("SELL END")
+		 		fmt.Println(v.Date)
+				fmt.Println(per)
 			}
 			continue
 		}
 		if po.IsSelling() {
-
+			_, per, ok := po.BuyBack(v)
+			fmt.Println("kohe")
+			fmt.Printf("%#v\n",v)
+			if ok {
+				println("BUYBUCK END")
+		 		fmt.Println(v.Date)
+				fmt.Println(per)
+			}
 			continue
 		}
 
@@ -67,7 +78,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 					p = v.Start
 				}
 				po.Buy(p)
-				fmt.Printf("Buy: %v: %v", v.Date, p)
+				fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
 		}
 
@@ -78,7 +89,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 					p = v.Start
 				}
 				po.ShortSell(p)
-				fmt.Printf("ShortSell: %v: %v", v.Date, p)
+				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
 		}
 

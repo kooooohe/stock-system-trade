@@ -2,6 +2,7 @@ package systemtrade
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -62,28 +63,79 @@ func (po *Position) ShortSell(p int) {
 	po.price = p
 }
 
-func (po *Position) Sell(c CandleStick) (int, float64) {
-	// todo あとで
-	po.t = nothing
+func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 
 	// LC
-	if float64(c.Start) <= float64(po.price)*(1-po.Lc) {
-		return c.Start - po.price, -(1.0 - float64(c.Start)/float64(po.price))
+	if float64(c.Start) <= po.lossCutPrice() {
+		po.t = nothing
+		return c.Start - po.price, -(1.0 - float64(c.Start)/float64(po.price)), true
 	}
 
-	if float64(c.Low) <= float64(po.price)*(1-po.Lc) {
-	  return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc
+	// LC
+	if float64(c.Low) <= po.lossCutPrice() {
+		po.t = nothing
+		return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc, true
 	}
 
+	// PROFIT
+	if float64(c.Start) >= po.profitPrice() {
+		po.t = nothing
+		return c.Start - po.price, (1.0 - float64(c.Start)/float64(po.price)), true
+	}
 
+	// PROFIT
+	if float64(c.High) >= po.profitPrice() {
+		po.t = nothing
+		return int(math.Ceil(float64(po.price) * po.Lp)), po.Lp, true
+	}
 
-	return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc
-	// TODO 利確のときも一緒にする？
-	// TODO 割合を出す？数値だけだと、具体的な期待値がでない
+	return 0, 0.0, false
 }
 
-func (po *Position) BuyBack() {
+func (po *Position) BuyBack(c CandleStick) (int, float64, bool){
+	// LC
+	if float64(c.Start) >= po.lossCutPrice() {
+		po.t = nothing
+		return -(c.Start - po.price), -(1.0 - float64(po.price)/float64(c.Start)),true
+	}
+
+	// LC
+	if float64(c.High) >= po.lossCutPrice() {
+		po.t = nothing
+		return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc, true
+	}
+
+	// PROFIT
+	if float64(c.Start) <= po.profitPrice() {
+		po.t = nothing
+		return -(c.Start - po.price), (1.0 - float64(po.price)/float64(c.Start)), true
+	}
+
+	// PROFIT
+	if float64(c.Low) <= po.profitPrice() {
+		po.t = nothing
+		return int(math.Ceil(float64(po.price) * po.Lp)), po.Lp, true
+	}
+
+	return 0, 0.0, false
 }
+
+func (po Position) lossCutPrice() float64 {
+	if po.t == buy {
+		return float64(po.price) * (1 - po.Lc)
+	}
+	// sell
+	return float64(po.price) * (1 + po.Lc)
+}
+
+func (po Position) profitPrice() float64 {
+	if po.t == buy {
+		return float64(po.price) * (1 + po.Lp)
+	}
+	// sell
+	return float64(po.price) * (1 - po.Lp)
+}
+
 func (po Position) IsDoing() bool {
 	return po.t != nothing
 }

@@ -2,6 +2,7 @@ package systemtrade
 
 import (
 	"encoding/csv"
+	"fmt"
 	_ "fmt"
 	"io"
 	"math"
@@ -39,6 +40,39 @@ func (c CandleSticks) DMA(d int, to int) (r float64) {
 	return float64(sum) / float64(d)
 }
 
+// ====== //
+
+type Score struct {
+	win  int
+	lose int
+	sum  float64
+	buy  int
+	shortSell int
+}
+func (s *Score) Win(){
+	s.win++
+}
+
+func (s *Score) Lose(){
+	s.lose++
+}
+func (s *Score) Buy(){
+	s.buy++
+}
+func (s *Score) ShortSell(){
+	s.shortSell++
+}
+func (s *Score) Sum(r float64) {
+	s.sum += r
+}
+func (s Score) Out() {
+	fmt.Printf("%#v", s)
+}
+
+var Result Score
+
+// ====== //
+
 type positionType int
 
 const (
@@ -57,36 +91,53 @@ type Position struct {
 func (po *Position) Buy(p int) {
 	po.price = p
 	po.t = buy
+
+	Result.Buy()
 }
+
 func (po *Position) ShortSell(p int) {
 	po.t = sell
 	po.price = p
+
+	Result.ShortSell()
 }
 
 func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 
 	// LC
 	if float64(c.Start) <= po.lossCutPrice() {
+		Result.Lose()
 		po.t = nothing
-		return c.Start - po.price, -(1.0 - float64(c.Start)/float64(po.price)), true
+		r:= -(1.0 - float64(c.Start)/float64(po.price))
+		Result.Sum(r)
+		return c.Start - po.price, r, true
 	}
 
 	// LC
 	if float64(c.Low) <= po.lossCutPrice() {
+		Result.Lose()
 		po.t = nothing
-		return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc, true
+		r:= -po.Lc
+		Result.Sum(r)
+		return int(math.Ceil(float64(po.price) * po.Lc)), r, true
 	}
 
 	// PROFIT
 	if float64(c.Start) >= po.profitPrice() {
+		Result.Win()
 		po.t = nothing
-		return c.Start - po.price, (float64(c.Start)/float64(po.price) - 1), true
+		r:=(float64(c.Start)/float64(po.price) - 1)
+		Result.Sum(r)
+		return c.Start - po.price,r , true
 	}
 
 	// PROFIT
 	if float64(c.High) >= po.profitPrice() {
+		Result.Win()
 		po.t = nothing
-		return int(math.Ceil(float64(po.price) * po.Lp)), po.Lp, true
+		r:= po.Lp
+		Result.Sum(r)
+		return int(math.Ceil(float64(po.price) * po.Lp)), r, true
 	}
 
 	return 0, 0.0, false
@@ -95,26 +146,38 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
 	// LC
 	if float64(c.Start) >= po.lossCutPrice() {
+		Result.Lose()
 		po.t = nothing
-		return -(c.Start - po.price), -(1.0 - float64(po.price)/float64(c.Start)), true
+		r:= -(1.0 - float64(po.price)/float64(c.Start))
+		Result.Sum(r)
+		return -(c.Start - po.price),r, true
 	}
 
 	// LC
 	if float64(c.High) >= po.lossCutPrice() {
+		Result.Lose()
 		po.t = nothing
-		return int(math.Ceil(float64(po.price) * po.Lc)), -po.Lc, true
+		r:= -po.Lc
+		Result.Sum(r)
+		return int(math.Ceil(float64(po.price) * po.Lc)), r, true
 	}
 
 	// PROFIT
 	if float64(c.Start) <= po.profitPrice() {
+		Result.Win()
 		po.t = nothing
-		return -(c.Start - po.price), (float64(po.price)/float64(c.Start) - 1), true
+		r:=(float64(po.price)/float64(c.Start) - 1)
+		Result.Sum(r)
+		return -(c.Start - po.price),r, true
 	}
 
 	// PROFIT
 	if float64(c.Low) <= po.profitPrice() {
+		Result.Win()
 		po.t = nothing
-		return int(math.Ceil(float64(po.price) * po.Lp)), po.Lp, true
+		r:=po.Lp
+		Result.Sum(r)
+		return int(math.Ceil(float64(po.price) * po.Lp)), r, true
 	}
 
 	return 0, 0.0, false
@@ -147,17 +210,6 @@ func (po Position) IsSelling() bool {
 }
 func (po Position) Price() int {
 	return po.price
-}
-
-type DMA struct {
-	candleSticks []CandleStick
-}
-
-func (d DMA) CurrentAvarage(du int) int {
-	return 0
-}
-func (d DMA) CurrentAvarageWithin(du int, b int) int {
-	return 0
 }
 
 func MakeCandleSticks(paths []string) (CandleSticks, error) {

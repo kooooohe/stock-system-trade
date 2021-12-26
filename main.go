@@ -33,8 +33,6 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 	p := 0
 
 	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
-	count := 0
-	sum := 0.0
 	for i, v := range cs {
 		// for DMA
 		if skipc > 0 || v.Date.Before(sDate) {
@@ -58,7 +56,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				println("SELL END")
 				fmt.Println(v.Date)
 				fmt.Println(per)
-				sum += per
+
 			}
 			continue
 		}
@@ -69,7 +67,6 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				println("BUYBUCK END")
 				fmt.Println(v.Date)
 				fmt.Println(per)
-				sum += per
 			}
 			continue
 		}
@@ -82,7 +79,6 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				}
 				po.Buy(p)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
-				count++
 			}
 		}
 
@@ -94,14 +90,13 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				}
 				po.ShortSell(p)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
-				count++
 			}
 		}
 
 	}
 
-	fmt.Printf("count: %v\n", count)
-	fmt.Printf("sum: %v\n", sum)
+	//TODO 勝ち数、負け数、一年ごとの結果すべて出す
+	systemtrade.Result.Out()
 	// vs.DMA(10)
 }
 

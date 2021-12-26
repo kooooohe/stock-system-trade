@@ -43,23 +43,24 @@ func (c CandleSticks) DMA(d int, to int) (r float64) {
 // ====== //
 
 type Score struct {
-	win  int
-	lose int
-	sum  float64
-	buy  int
+	win       int
+	lose      int
+	sum       float64
+	buy       int
 	shortSell int
 }
-func (s *Score) Win(){
+
+func (s *Score) Win() {
 	s.win++
 }
 
-func (s *Score) Lose(){
+func (s *Score) Lose() {
 	s.lose++
 }
-func (s *Score) Buy(){
+func (s *Score) Buy() {
 	s.buy++
 }
-func (s *Score) ShortSell(){
+func (s *Score) ShortSell() {
 	s.shortSell++
 }
 func (s *Score) Sum(r float64) {
@@ -103,80 +104,85 @@ func (po *Position) ShortSell(p int) {
 }
 
 func (po *Position) Sell(c CandleStick) (int, float64, bool) {
+	a, b, ok := po.sell(c)
+	if ok {
+		po.t = nothing
+		Result.Sum(b)
+		if b > 0 {
+			Result.Win()
+		} else {
+
+			Result.Lose()
+		}
+	}
+	return a, b, ok
+}
+
+func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
+	a, b, ok := po.buyBack(c)
+	if ok {
+		Result.Sum(b)
+		po.t = nothing
+		if b > 0 {
+			Result.Win()
+		} else {
+
+			Result.Lose()
+		}
+	}
+	return a, b, ok
+}
+func (po *Position) sell(c CandleStick) (int, float64, bool) {
 
 	// LC
 	if float64(c.Start) <= po.lossCutPrice() {
-		Result.Lose()
-		po.t = nothing
-		r:= -(1.0 - float64(c.Start)/float64(po.price))
-		Result.Sum(r)
+		r := -(1.0 - float64(c.Start)/float64(po.price))
 		return c.Start - po.price, r, true
 	}
 
 	// LC
 	if float64(c.Low) <= po.lossCutPrice() {
-		Result.Lose()
-		po.t = nothing
-		r:= -po.Lc
-		Result.Sum(r)
+		r := -po.Lc
 		return int(math.Ceil(float64(po.price) * po.Lc)), r, true
 	}
 
 	// PROFIT
 	if float64(c.Start) >= po.profitPrice() {
-		Result.Win()
-		po.t = nothing
-		r:=(float64(c.Start)/float64(po.price) - 1)
-		Result.Sum(r)
-		return c.Start - po.price,r , true
+		r := (float64(c.Start)/float64(po.price) - 1)
+		return c.Start - po.price, r, true
 	}
 
 	// PROFIT
 	if float64(c.High) >= po.profitPrice() {
-		Result.Win()
-		po.t = nothing
-		r:= po.Lp
-		Result.Sum(r)
+		r := po.Lp
 		return int(math.Ceil(float64(po.price) * po.Lp)), r, true
 	}
 
 	return 0, 0.0, false
 }
 
-func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
+func (po *Position) buyBack(c CandleStick) (int, float64, bool) {
 	// LC
 	if float64(c.Start) >= po.lossCutPrice() {
-		Result.Lose()
-		po.t = nothing
-		r:= -(1.0 - float64(po.price)/float64(c.Start))
-		Result.Sum(r)
-		return -(c.Start - po.price),r, true
+		r := -(1.0 - float64(po.price)/float64(c.Start))
+		return -(c.Start - po.price), r, true
 	}
 
 	// LC
 	if float64(c.High) >= po.lossCutPrice() {
-		Result.Lose()
-		po.t = nothing
-		r:= -po.Lc
-		Result.Sum(r)
+		r := -po.Lc
 		return int(math.Ceil(float64(po.price) * po.Lc)), r, true
 	}
 
 	// PROFIT
 	if float64(c.Start) <= po.profitPrice() {
-		Result.Win()
-		po.t = nothing
-		r:=(float64(po.price)/float64(c.Start) - 1)
-		Result.Sum(r)
-		return -(c.Start - po.price),r, true
+		r := (float64(po.price)/float64(c.Start) - 1)
+		return -(c.Start - po.price), r, true
 	}
 
 	// PROFIT
 	if float64(c.Low) <= po.profitPrice() {
-		Result.Win()
-		po.t = nothing
-		r:=po.Lp
-		Result.Sum(r)
+		r := po.Lp
 		return int(math.Ceil(float64(po.price) * po.Lp)), r, true
 	}
 

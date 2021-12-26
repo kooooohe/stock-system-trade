@@ -3,7 +3,6 @@ package systemtrade
 import (
 	"encoding/csv"
 	"fmt"
-	_ "fmt"
 	"io"
 	"math"
 	"os"
@@ -87,7 +86,7 @@ func (s *Score) SetStartRecode(c CandleStick, p int, t positionType) {
 func (s *Score) SetEndRcode(c CandleStick, d float64) {
 	s.Sum(d)
 	//TODO endにpriceはいる？
-	s.recodes[len(s.recodes)-1].SetEnd(c,0, d)
+	s.recodes[len(s.recodes)-1].SetEnd(c, 0, d)
 }
 
 func (s *Score) Win() {
@@ -136,6 +135,7 @@ type Position struct {
 
 func (po *Position) Buy(p int, c CandleStick) {
 	po.t = buy
+	po.price = p
 
 	Result.SetStartRecode(c, p, buy)
 }
@@ -150,10 +150,9 @@ func (po *Position) ShortSell(p int, c CandleStick) {
 func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 	a, b, ok := po.sell(c)
 	if ok {
+		fmt.Println(b)
 		po.t = nothing
-		//println("kohe")
-		//println(b)
-		Result.SetEndRcode(c,b)
+		Result.SetEndRcode(c, b)
 		if b > 0 {
 			Result.Win()
 		} else {
@@ -167,9 +166,8 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
 	a, b, ok := po.buyBack(c)
 	if ok {
-		//println("kohe")
-		// println(b)
-		Result.SetEndRcode(c,b)
+		fmt.Println(b)
+		Result.SetEndRcode(c, b)
 		po.t = nothing
 		if b > 0 {
 			Result.Win()

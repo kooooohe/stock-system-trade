@@ -77,7 +77,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				if v.Start > yesterday.High {
 					p = v.Start
 				}
-				po.Buy(p)
+				po.Buy(p,v)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
 		}
@@ -88,7 +88,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				if v.Start < yesterday.Low {
 					p = v.Start
 				}
-				po.ShortSell(p)
+				po.ShortSell(p,v)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
 		}

@@ -3,7 +3,6 @@ package systemtrade
 import (
 	"encoding/csv"
 	"fmt"
-	_ "fmt"
 	"io"
 	"math"
 	"os"
@@ -42,12 +41,52 @@ func (c CandleSticks) DMA(d int, to int) (r float64) {
 
 // ====== //
 
+type recode struct {
+	start
+	end
+	t          positionType
+	defference float64
+}
+
+func (r *recode) SetEnd(c CandleStick, p int, d float64) {
+	r.end = end{p: p, c: c}
+	r.defference = d
+}
+
+type start struct {
+	c CandleStick
+	p int
+}
+
+type end struct {
+	c CandleStick
+	p int
+}
+
 type Score struct {
 	win       int
 	lose      int
 	sum       float64
 	buy       int
 	shortSell int
+	recodes   []recode
+}
+
+func (s *Score) SetStartRecode(c CandleStick, p int, t positionType) {
+	r := recode{start: start{c: c, p: p}, t: t}
+	s.recodes = append(s.recodes, r)
+
+	if t == buy {
+		s.Buy()
+	} else {
+		s.ShortSell()
+	}
+}
+
+func (s *Score) SetEndRcode(c CandleStick, d float64) {
+	s.Sum(d)
+	//TODO endにpriceはいる？
+	s.recodes[len(s.recodes)-1].SetEnd(c, 0, d)
 }
 
 func (s *Score) Win() {
@@ -67,7 +106,12 @@ func (s *Score) Sum(r float64) {
 	s.sum += r
 }
 func (s Score) Out() {
-	fmt.Printf("%#v", s)
+	// fmt.Printf("%#v", s)
+	fmt.Printf("sum: %v\n", s.sum)
+	fmt.Printf("win %v\n", s.win)
+	fmt.Printf("lose %v\n", s.lose)
+	fmt.Printf("buy %v\n", s.buy)
+	fmt.Printf("shortSell %v\n", s.shortSell)
 }
 
 var Result Score
@@ -89,25 +133,26 @@ type Position struct {
 	Lp    float64 //指値
 }
 
-func (po *Position) Buy(p int) {
-	po.price = p
+func (po *Position) Buy(p int, c CandleStick) {
 	po.t = buy
+	po.price = p
 
-	Result.Buy()
+	Result.SetStartRecode(c, p, buy)
 }
 
-func (po *Position) ShortSell(p int) {
+func (po *Position) ShortSell(p int, c CandleStick) {
 	po.t = sell
 	po.price = p
 
-	Result.ShortSell()
+	Result.SetStartRecode(c, p, sell)
 }
 
 func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 	a, b, ok := po.sell(c)
 	if ok {
+		fmt.Println(b)
 		po.t = nothing
-		Result.Sum(b)
+		Result.SetEndRcode(c, b)
 		if b > 0 {
 			Result.Win()
 		} else {
@@ -121,7 +166,8 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
 	a, b, ok := po.buyBack(c)
 	if ok {
-		Result.Sum(b)
+		fmt.Println(b)
+		Result.SetEndRcode(c, b)
 		po.t = nothing
 		if b > 0 {
 			Result.Win()

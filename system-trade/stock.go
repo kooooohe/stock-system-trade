@@ -48,6 +48,10 @@ type recode struct {
 	defference float64
 }
 
+func (r recode) StartDate() time.Time {
+	return r.start.c.Date
+}
+
 func (r *recode) SetEnd(c CandleStick, p int, d float64) {
 	r.end = end{p: p, c: c}
 	r.defference = d
@@ -106,12 +110,71 @@ func (s *Score) Sum(r float64) {
 	s.sum += r
 }
 func (s Score) Out() {
-	// fmt.Printf("%#v", s)
-	fmt.Printf("sum: %v\n", s.sum)
-	fmt.Printf("win %v\n", s.win)
-	fmt.Printf("lose %v\n", s.lose)
-	fmt.Printf("buy %v\n", s.buy)
-	fmt.Printf("shortSell %v\n", s.shortSell)
+	fmt.Printf("TOTAL sum: %v\n", s.sum)
+	fmt.Printf("TOTAL win: %v\n", s.win)
+	fmt.Printf("TOTAL lose: %v\n", s.lose)
+	fmt.Printf("TOTAL buy: %v\n", s.buy)
+	fmt.Printf("TOTAL shortSell: %v\n", s.shortSell)
+	fmt.Printf("TOTAL len: %v\n", len(s.recodes))
+
+	sum := 0.0
+	sumS := 0.0
+	sumB := 0.0
+	cntB := 0
+	cntS := 0
+
+	win := 0
+	lose := 0
+	tDate := s.recodes[0].StartDate()
+	tYear := tDate.Year()
+
+	for _, v := range s.recodes {
+		if v.StartDate().Year() != tYear {
+			fmt.Printf("【YAER】: %v\n", tYear)
+			fmt.Printf("win: %v\n", win)
+			fmt.Printf("lose: %v\n", lose)
+			fmt.Printf("sum: %v\n", sum)
+			fmt.Printf("sumShortSell: %v\n", sumS)
+			fmt.Printf("sum Buy: %v\n\n", sumB)
+			fmt.Printf("count Buy: %v\n", cntB)
+			fmt.Printf("count ShortSell: %v\n", cntS)
+			tYear = v.StartDate().Year()
+			sum = 0
+			win = 0
+			lose = 0
+
+			sumS = 0
+			sumB = 0
+			cntB = 0
+			sumS = 0
+		}
+
+		sum += v.defference
+		if v.defference > 0 {
+			win++
+		} else {
+			lose++
+		}
+
+		if v.t == buy {
+			cntB++
+			sumB += v.defference
+		} else {
+			cntS++
+			sumS += v.defference
+		}
+
+	}
+
+	fmt.Printf("【YAER】: %v\n", s.recodes[len(s.recodes)-1].StartDate().Year())
+	fmt.Printf("win: %v\n", win)
+	fmt.Printf("lose: %v\n", lose)
+	fmt.Printf("sum: %v\n", sum)
+
+	fmt.Printf("sumShortSell: %v\n", sumS)
+	fmt.Printf("sum Buy: %v\n\n", sumB)
+	fmt.Printf("count Buy: %v\n", cntB)
+	fmt.Printf("count ShortSell: %v\n", cntS)
 }
 
 var Result Score

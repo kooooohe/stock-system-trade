@@ -32,8 +32,8 @@ func targetFiles(tDir string) (tFiles []string, err error) {
 
 func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 
-	dmaNum := 60
-	skipc := dmaNum
+	dmaNum := 10
+	skipc := 25
 	p := 0
 
 	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
@@ -47,9 +47,10 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		// fmt.Printf("%v: ", v.Date)
 		// fmt.Println(d)
 		// fmt.Println(v.Date())
-		//TODO 10DMAが上向きで、株価のしたひげでも一回でもDMA以下にあって、次の日が高値を超えたら 3% 7%
+		//10DMAが上向きで、株価のしたひげでも一回でもDMA以下にあって、次の日が高値を超えたら 3% 7%
 
-		wasDMAUp := cs.DMA(dmaNum, i-1) > cs.DMA(dmaNum, i-2)
+		wasDMAUp := cs.DMA(dmaNum, i-1) > cs.DMA(dmaNum, i-2) && cs.DMA(10, i-1) > cs.DMA(10, i-2)
+		wasDMADown := cs.DMA(dmaNum, i-1) < cs.DMA(dmaNum, i-2) && cs.DMA(10, i-1) < cs.DMA(10, i-2)
 
 		yesterday := cs[i-1]
 		wasStockUnderDMA := float64(yesterday.Low) < cs.DMA(dmaNum, i-1)
@@ -87,7 +88,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 			}
 		}
 
-		if !wasDMAUp && wasStockOverDMA {
+		if wasDMADown && wasStockOverDMA {
 			if v.Low < yesterday.Low {
 				p = yesterday.Low - 1
 				if v.Start < yesterday.Low {

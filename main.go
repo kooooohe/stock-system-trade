@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	systemtrade "system-trade/system-trade"
 	"time"
@@ -29,7 +31,9 @@ func targetFiles(tDir string) (tFiles []string, err error) {
 }
 
 func trade(sDate time.Time, cs systemtrade.CandleSticks) {
-	skipc := 10
+
+	dmaNum := 25
+	skipc := dmaNum
 	p := 0
 
 	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
@@ -45,9 +49,9 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		// fmt.Println(v.Date())
 		//TODO 10DMAが上向きで、株価のしたひげでも一回でもDMA以下にあって、次の日が高値を超えたら 3% 7%
 
-		wasDMAUp := cs.DMA(10, i-1) > cs.DMA(10, i-2)
-		wasStockUnderDMA := float64(v.Low) < cs.DMA(10, i-1)
-		wasStockOverDMA := float64(v.High) > cs.DMA(10, i-1)
+		wasDMAUp := cs.DMA(dmaNum, i-1) > cs.DMA(dmaNum, i-2)
+		wasStockUnderDMA := float64(v.Low) < cs.DMA(dmaNum, i-1)
+		wasStockOverDMA := float64(v.High) > cs.DMA(dmaNum, i-1)
 		yesterday := cs[i-1]
 
 		if po.IsBuying() {
@@ -77,7 +81,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				if v.Start > yesterday.High {
 					p = v.Start
 				}
-				po.Buy(p,v)
+				po.Buy(p, v)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
 		}
@@ -88,7 +92,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				if v.Start < yesterday.Low {
 					p = v.Start
 				}
-				po.ShortSell(p,v)
+				po.ShortSell(p, v)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
 		}
@@ -101,7 +105,15 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 }
 
 func main() {
-	ns, err := targetFiles("./data/6103")
+	var (
+		tDir = flag.String("tDir", "0", "target folder name")
+	)
+	flag.Parse()
+
+	if *tDir == "0" {
+		os.Exit(1)
+	}
+	ns, err := targetFiles("./data/" + *tDir)
 	if err != nil {
 		log.Fatalln(err)
 	}

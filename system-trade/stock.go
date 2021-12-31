@@ -110,13 +110,6 @@ func (s *Score) Sum(r float64) {
 	s.sum += r
 }
 func (s Score) Out() {
-	fmt.Printf("TOTAL sum: %v\n", s.sum)
-	fmt.Printf("TOTAL win: %v\n", s.win)
-	fmt.Printf("TOTAL lose: %v\n", s.lose)
-	fmt.Printf("TOTAL buy: %v\n", s.buy)
-	fmt.Printf("TOTAL shortSell: %v\n", s.shortSell)
-	fmt.Printf("TOTAL len: %v\n", len(s.recodes))
-
 	sum := 0.0
 	sumS := 0.0
 	sumB := 0.0
@@ -175,6 +168,16 @@ func (s Score) Out() {
 	fmt.Printf("sum Buy: %v\n\n", sumB)
 	fmt.Printf("count Buy: %v\n", cntB)
 	fmt.Printf("count ShortSell: %v\n", cntS)
+
+	/*TOTAL*/
+	fmt.Println("==================")
+	fmt.Printf("TOTAL sum: %v\n", s.sum)
+	fmt.Printf("TOTAL win: %v\n", s.win)
+	fmt.Printf("TOTAL lose: %v\n", s.lose)
+	fmt.Printf("TOTAL buy: %v\n", s.buy)
+	fmt.Printf("TOTAL shortSell: %v\n", s.shortSell)
+	fmt.Printf("TOTAL len: %v\n", len(s.recodes))
+
 }
 
 var Result Score

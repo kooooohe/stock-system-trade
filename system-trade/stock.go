@@ -127,10 +127,10 @@ func (s Score) Out() {
 			fmt.Printf("win: %v\n", win)
 			fmt.Printf("lose: %v\n", lose)
 			fmt.Printf("sum: %v\n", sum)
-			fmt.Printf("sumShortSell: %v\n", sumS)
 			fmt.Printf("sum Buy: %v\n\n", sumB)
-			fmt.Printf("count Buy: %v\n", cntB)
-			fmt.Printf("count ShortSell: %v\n", cntS)
+			fmt.Printf("sumShortSell: %v\n", sumS)
+			fmt.Printf("count: Buy: %v\n", cntB)
+			fmt.Printf("count: ShortSell: %v\n", cntS)
 			tYear = v.StartDate().Year()
 			sum = 0
 			win = 0
@@ -164,10 +164,10 @@ func (s Score) Out() {
 	fmt.Printf("lose: %v\n", lose)
 	fmt.Printf("sum: %v\n", sum)
 
-	fmt.Printf("sumShortSell: %v\n", sumS)
 	fmt.Printf("sum Buy: %v\n\n", sumB)
-	fmt.Printf("count Buy: %v\n", cntB)
-	fmt.Printf("count ShortSell: %v\n", cntS)
+	fmt.Printf("sumShortSell: %v\n", sumS)
+	fmt.Printf("count: Buy: %v\n", cntB)
+	fmt.Printf("count: ShortSell: %v\n", cntS)
 
 	/*TOTAL*/
 	fmt.Println("==================")

@@ -139,7 +139,7 @@ func (s Score) Out() {
 			sumS = 0
 			sumB = 0
 			cntB = 0
-			sumS = 0
+			cntS = 0
 		}
 
 		sum += v.defference

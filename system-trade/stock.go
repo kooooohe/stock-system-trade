@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strconv"
 
-	// "strings"
 	"time"
 )
 
@@ -116,16 +115,19 @@ func (s Score) Out() {
 	cntB := 0
 	cntS := 0
 
-	win := 0
-	lose := 0
+	winB := 0
+	winS := 0
+	loseB := 0
+	loseS := 0
+
 	tDate := s.recodes[0].StartDate()
 	tYear := tDate.Year()
 
 	for _, v := range s.recodes {
 		if v.StartDate().Year() != tYear {
 			fmt.Printf("【YAER】: %v\n", tYear)
-			fmt.Printf("win: %v\n", win)
-			fmt.Printf("lose: %v\n", lose)
+			fmt.Printf("win:  %v (buy: %v shortsell: %v)\n", winB+winS, winB, winS)
+			fmt.Printf("lose: %v (buy: %v shortsell: %v)\n", loseB+loseS, loseB, loseS)
 			fmt.Printf("sum: %v\n\n", sum)
 			fmt.Printf("sum Buy: %v\n", sumB)
 			fmt.Printf("sumShortSell: %v\n\n", sumS)
@@ -133,8 +135,10 @@ func (s Score) Out() {
 			fmt.Printf("count: ShortSell: %v\n", cntS)
 			tYear = v.StartDate().Year()
 			sum = 0
-			win = 0
-			lose = 0
+			winB = 0
+			winS = 0
+			loseB = 0
+			loseS = 0
 
 			sumS = 0
 			sumB = 0
@@ -143,10 +147,20 @@ func (s Score) Out() {
 		}
 
 		sum += v.defference
-		if v.defference > 0 {
-			win++
+
+		isWin := v.defference > 0
+		if isWin {
+			if v.t == buy {
+				winB++
+			} else {
+				winS++
+			}
 		} else {
-			lose++
+			if v.t == buy {
+				loseB++
+			} else {
+				loseS++
+			}
 		}
 
 		if v.t == buy {
@@ -160,8 +174,8 @@ func (s Score) Out() {
 	}
 
 	fmt.Printf("【YAER】: %v\n", s.recodes[len(s.recodes)-1].StartDate().Year())
-	fmt.Printf("win: %v\n", win)
-	fmt.Printf("lose: %v\n", lose)
+	fmt.Printf("win: %v (buy: %v shortsell: %v)\n", winB+winS, winB, winS)
+	fmt.Printf("lose: %v (buy: %v shortsell: %v)\n", loseB+loseS, loseB, loseS)
 	fmt.Printf("sum: %v\n\n", sum)
 
 	fmt.Printf("sum Buy: %v\n", sumB)

@@ -33,7 +33,7 @@ func targetFiles(tDir string) (tFiles []string, err error) {
 func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 
 	dmaNum := 10
-	skipc := 25
+	skipc := 60
 	p := 0
 
 	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
@@ -49,8 +49,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		// fmt.Println(v.Date())
 		//10DMAが上向きで、株価のしたひげでも一回でもDMA以下にあって、次の日が高値を超えたら 3% 7%
 
-		wasDMAUp := cs.DMA(dmaNum, i-1) > cs.DMA(dmaNum, i-2) && cs.DMA(10, i-1) > cs.DMA(10, i-2)
-		wasDMADown := cs.DMA(dmaNum, i-1) < cs.DMA(dmaNum, i-2) && cs.DMA(10, i-1) < cs.DMA(10, i-2)
+		wasDMAUp := cs.DMA(dmaNum, i-1) > cs.DMA(dmaNum, i-2) && cs.DMA(25, i-1) > cs.DMA(25, i-2)
+		wasDMADown := cs.DMA(dmaNum, i-1) < cs.DMA(dmaNum, i-2) && cs.DMA(25, i-1) < cs.DMA(25, i-2)
 
 		yesterday := cs[i-1]
 		wasStockUnderDMA := float64(yesterday.Low) < cs.DMA(dmaNum, i-1)

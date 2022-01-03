@@ -230,7 +230,6 @@ func (po *Position) ShortSell(p int, c CandleStick) {
 func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 	a, b, ok := po.sell(c)
 	if ok {
-		fmt.Println(b)
 		po.t = nothing
 		Result.SetEndRcode(c, b)
 		if b > 0 {
@@ -246,7 +245,6 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
 	a, b, ok := po.buyBack(c)
 	if ok {
-		fmt.Println(b)
 		Result.SetEndRcode(c, b)
 		po.t = nothing
 		if b > 0 {

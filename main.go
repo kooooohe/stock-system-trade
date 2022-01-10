@@ -85,6 +85,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		wasDMADown := isDMADown(cs, dmaNum, i-1)
 
 		yesterday := cs[i-1]
+		//TODO endにかえる？
 		wasStockUnderDMA := float64(yesterday.Low) < cs.DMA(dmaNum, i-1)
 		wasStockOverDMA := float64(yesterday.High) > cs.DMA(dmaNum, i-1)
 
@@ -109,10 +110,21 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 			continue
 		}
 
+		tmpDMA := 25
 		if wasDMAUp && wasStockUnderDMA {
-			if v.High > yesterday.High {
-				p = yesterday.High + 1
-				if v.Start > yesterday.High {
+			/*
+				if v.High > yesterday.High {
+					p = yesterday.High + 1
+					if v.Start > yesterday.High {
+						p = v.Start
+					}
+					po.Buy(p, v)
+					fmt.Printf("Buy: %v: %v\n", v.Date, p)
+				}
+			*/
+			if float64(v.High) > cs.DMA(tmpDMA, i-1) {
+				p = int(cs.DMA(tmpDMA, i-1)) + 1
+				if v.Start > int(cs.DMA(tmpDMA, i-1)) {
 					p = v.Start
 				}
 				po.Buy(p, v)
@@ -121,9 +133,19 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		}
 
 		if wasDMADown && wasStockOverDMA {
-			if v.Low < yesterday.Low {
-				p = yesterday.Low - 1
-				if v.Start < yesterday.Low {
+			/*
+				if v.Low < yesterday.Low {
+					p = yesterday.Low - 1
+					if v.Start < yesterday.Low {
+						p = v.Start
+					}
+					po.ShortSell(p, v)
+					fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
+				}
+			*/
+			if float64(v.Low) < cs.DMA(tmpDMA, i-1) {
+				p = int(cs.DMA(tmpDMA, i-1)) - 1
+				if v.Start < int(cs.DMA(tmpDMA, i-1)) {
 					p = v.Start
 				}
 				po.ShortSell(p, v)
@@ -133,9 +155,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 
 	}
 
-	//TODO 勝ち数、負け数、一年ごとの結果すべて出す
 	systemtrade.Result.Out()
-	// vs.DMA(10)
 }
 
 func main() {

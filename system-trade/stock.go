@@ -14,10 +14,10 @@ import (
 
 type CandleStick struct {
 	Date  time.Time
-	Start int
-	High  int
-	Low   int
-	End   int
+	Start float64
+	High  float64
+	Low   float64
+	End   float64
 }
 
 type CandleSticks []CandleStick
@@ -29,7 +29,7 @@ func (c CandleSticks) sort() CandleSticks {
 	return c
 }
 func (c CandleSticks) DMA(d int, to int) (r float64) {
-	sum := 0
+	sum := 0.0
 	// size := len(c) -1
 	for i := 0; i < d; i++ {
 		sum += c[to-i].End
@@ -51,19 +51,19 @@ func (r recode) StartDate() time.Time {
 	return r.start.c.Date
 }
 
-func (r *recode) SetEnd(c CandleStick, p int, d float64) {
+func (r *recode) SetEnd(c CandleStick, p float64, d float64) {
 	r.end = end{p: p, c: c}
 	r.defference = d
 }
 
 type start struct {
 	c CandleStick
-	p int
+	p float64
 }
 
 type end struct {
 	c CandleStick
-	p int
+	p float64
 }
 
 type Score struct {
@@ -75,7 +75,7 @@ type Score struct {
 	recodes   []recode
 }
 
-func (s *Score) SetStartRecode(c CandleStick, p int, t positionType) {
+func (s *Score) SetStartRecode(c CandleStick, p float64, t positionType) {
 	r := recode{start: start{c: c, p: p}, t: t}
 	s.recodes = append(s.recodes, r)
 
@@ -208,26 +208,26 @@ const (
 
 type Position struct {
 	t     positionType
-	price int
+	price float64
 	Lc    float64
 	Lp    float64 //指値
 }
 
-func (po *Position) Buy(p int, c CandleStick) {
+func (po *Position) Buy(p float64, c CandleStick) {
 	po.t = buy
 	po.price = p
 
 	Result.SetStartRecode(c, p, buy)
 }
 
-func (po *Position) ShortSell(p int, c CandleStick) {
+func (po *Position) ShortSell(p float64, c CandleStick) {
 	po.t = sell
 	po.price = p
 
 	Result.SetStartRecode(c, p, sell)
 }
 
-func (po *Position) Sell(c CandleStick) (int, float64, bool) {
+func (po *Position) Sell(c CandleStick) (float64, float64, bool) {
 	a, b, ok := po.sell(c)
 	if ok {
 		po.t = nothing
@@ -242,7 +242,7 @@ func (po *Position) Sell(c CandleStick) (int, float64, bool) {
 	return a, b, ok
 }
 
-func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
+func (po *Position) BuyBack(c CandleStick) (float64, float64, bool) {
 	a, b, ok := po.buyBack(c)
 	if ok {
 		Result.SetEndRcode(c, b)
@@ -256,7 +256,7 @@ func (po *Position) BuyBack(c CandleStick) (int, float64, bool) {
 	}
 	return a, b, ok
 }
-func (po *Position) sell(c CandleStick) (int, float64, bool) {
+func (po *Position) sell(c CandleStick) (float64, float64, bool) {
 
 	// LC
 	if float64(c.Start) <= po.lossCutPrice() {
@@ -267,7 +267,7 @@ func (po *Position) sell(c CandleStick) (int, float64, bool) {
 	// LC
 	if float64(c.Low) <= po.lossCutPrice() {
 		r := -po.Lc
-		return int(math.Ceil(float64(po.price) * po.Lc)), r, true
+		return math.Ceil(float64(po.price) * po.Lc), r, true
 	}
 
 	// PROFIT
@@ -279,13 +279,13 @@ func (po *Position) sell(c CandleStick) (int, float64, bool) {
 	// PROFIT
 	if float64(c.High) >= po.profitPrice() {
 		r := po.Lp
-		return int(math.Ceil(float64(po.price) * po.Lp)), r, true
+		return math.Ceil(float64(po.price) * po.Lp), r, true
 	}
 
 	return 0, 0.0, false
 }
 
-func (po *Position) buyBack(c CandleStick) (int, float64, bool) {
+func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 	// LC
 	if float64(c.Start) >= po.lossCutPrice() {
 		r := -(1.0 - float64(po.price)/float64(c.Start))
@@ -295,7 +295,7 @@ func (po *Position) buyBack(c CandleStick) (int, float64, bool) {
 	// LC
 	if float64(c.High) >= po.lossCutPrice() {
 		r := -po.Lc
-		return int(math.Ceil(float64(po.price) * po.Lc)), r, true
+		return math.Ceil(float64(po.price) * po.Lc), r, true
 	}
 
 	// PROFIT
@@ -307,7 +307,7 @@ func (po *Position) buyBack(c CandleStick) (int, float64, bool) {
 	// PROFIT
 	if float64(c.Low) <= po.profitPrice() {
 		r := po.Lp
-		return int(math.Ceil(float64(po.price) * po.Lp)), r, true
+		return math.Ceil(float64(po.price) * po.Lp), r, true
 	}
 
 	return 0, 0.0, false
@@ -338,7 +338,7 @@ func (po Position) IsBuying() bool {
 func (po Position) IsSelling() bool {
 	return po.t == sell
 }
-func (po Position) Price() int {
+func (po Position) Price() float64 {
 	return po.price
 }
 
@@ -370,10 +370,10 @@ func MakeCandleSticks(paths []string) (CandleSticks, error) {
 			layout := "2006/1/2"
 			// layout := "2006/01/02"
 			dt, _ := time.Parse(layout, recode[0])
-			s, _ := strconv.Atoi(recode[1])
-			h, _ := strconv.Atoi(recode[2])
-			l, _ := strconv.Atoi(recode[3])
-			e, _ := strconv.Atoi(recode[4])
+			s, _ := strconv.ParseFloat(recode[1], 64)
+			h, _ := strconv.ParseFloat(recode[2], 64)
+			l, _ := strconv.ParseFloat(recode[3], 64)
+			e, _ := strconv.ParseFloat(recode[4], 64)
 			c := CandleStick{
 				Date:  dt,
 				Start: s,

@@ -66,10 +66,12 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 
 	dmaNum := 10
 	skipc := 60
-	p := 0
+	p := 0.0
 
 	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
 	for i, v := range cs {
+		// fmt.Println(v.Date)
+		// fmt.Printf("%v", v)
 		// for DMA
 		if skipc > 0 || v.Date.Before(sDate) {
 			skipc--
@@ -111,8 +113,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		}
 
 		tmpDMA := 25
+		_ = tmpDMA
 		if wasDMAUp && wasStockUnderDMA {
-			/*
 				if v.High > yesterday.High {
 					p = yesterday.High + 1
 					if v.Start > yesterday.High {
@@ -121,19 +123,19 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 					po.Buy(p, v)
 					fmt.Printf("Buy: %v: %v\n", v.Date, p)
 				}
-			*/
+			/*
 			if float64(v.High) > cs.DMA(tmpDMA, i-1) {
-				p = int(cs.DMA(tmpDMA, i-1)) + 1
-				if v.Start > int(cs.DMA(tmpDMA, i-1)) {
+				p = cs.DMA(tmpDMA, i-1) + 1
+				if v.Start > cs.DMA(tmpDMA, i-1) {
 					p = v.Start
 				}
 				po.Buy(p, v)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
+			*/
 		}
 
 		if wasDMADown && wasStockOverDMA {
-			/*
 				if v.Low < yesterday.Low {
 					p = yesterday.Low - 1
 					if v.Start < yesterday.Low {
@@ -142,15 +144,16 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 					po.ShortSell(p, v)
 					fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 				}
-			*/
+			/*
 			if float64(v.Low) < cs.DMA(tmpDMA, i-1) {
-				p = int(cs.DMA(tmpDMA, i-1)) - 1
-				if v.Start < int(cs.DMA(tmpDMA, i-1)) {
+				p = cs.DMA(tmpDMA, i-1) - 1
+				if v.Start < cs.DMA(tmpDMA, i-1) {
 					p = v.Start
 				}
 				po.ShortSell(p, v)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
+			*/
 		}
 
 	}

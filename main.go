@@ -37,6 +37,7 @@ func isDMAUp(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 			return false
 		}
 	}
+
 	for j := 0; j < 1; j++ {
 		if cs.DMA(25, i-j) <= cs.DMA(25, i-(j+1)) {
 			return false
@@ -68,7 +69,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 	skipc := 60
 	p := 0.0
 
-	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
+	//TODO 引数化
+	po := systemtrade.Position{Lc: 0.03, Lp: 0.10}
 	for i, v := range cs {
 		// fmt.Println(v.Date)
 		// fmt.Printf("%v", v)
@@ -87,9 +89,11 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		wasDMADown := isDMADown(cs, dmaNum, i-1)
 
 		yesterday := cs[i-1]
-		//TODO endにかえる？
 		wasStockUnderDMA := float64(yesterday.Low) < cs.DMA(dmaNum, i-1)
 		wasStockOverDMA := float64(yesterday.High) > cs.DMA(dmaNum, i-1)
+		//TODO endにかえる？
+		// wasStockUnderDMA := float64(yesterday.End) < cs.DMA(dmaNum, i-1)
+		// wasStockOverDMA := float64(yesterday.End) > cs.DMA(dmaNum, i-1)
 
 		if po.IsBuying() {
 			_, per, ok := po.Sell(v)
@@ -115,44 +119,44 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		tmpDMA := 25
 		_ = tmpDMA
 		if wasDMAUp && wasStockUnderDMA {
-				if v.High > yesterday.High {
-					p = yesterday.High + 1
-					if v.Start > yesterday.High {
-						p = v.Start
-					}
-					po.Buy(p, v)
-					fmt.Printf("Buy: %v: %v\n", v.Date, p)
-				}
-			/*
-			if float64(v.High) > cs.DMA(tmpDMA, i-1) {
-				p = cs.DMA(tmpDMA, i-1) + 1
-				if v.Start > cs.DMA(tmpDMA, i-1) {
+			if v.High > yesterday.High {
+				p = yesterday.High + 1
+				if v.Start > yesterday.High {
 					p = v.Start
 				}
 				po.Buy(p, v)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
+			/*
+				if v.High > cs.DMA(tmpDMA, i-1) {
+					p = cs.DMA(tmpDMA, i-1) + 1
+					if v.Start > cs.DMA(tmpDMA, i-1) {
+						p = v.Start
+					}
+					po.Buy(p, v)
+					fmt.Printf("Buy: %v: %v\n", v.Date, p)
+				}
 			*/
 		}
 
 		if wasDMADown && wasStockOverDMA {
-				if v.Low < yesterday.Low {
-					p = yesterday.Low - 1
-					if v.Start < yesterday.Low {
-						p = v.Start
-					}
-					po.ShortSell(p, v)
-					fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
-				}
-			/*
-			if float64(v.Low) < cs.DMA(tmpDMA, i-1) {
-				p = cs.DMA(tmpDMA, i-1) - 1
-				if v.Start < cs.DMA(tmpDMA, i-1) {
+			if v.Low < yesterday.Low {
+				p = yesterday.Low - 1
+				if v.Start < yesterday.Low {
 					p = v.Start
 				}
 				po.ShortSell(p, v)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
+			/*
+				if v.Low < cs.DMA(tmpDMA, i-1) {
+					p = cs.DMA(tmpDMA, i-1) - 1
+					if v.Start < cs.DMA(tmpDMA, i-1) {
+						p = v.Start
+					}
+					po.ShortSell(p, v)
+					fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
+				}
 			*/
 		}
 
@@ -185,3 +189,4 @@ func main() {
 	sDate, _ := time.Parse(layout, "2015/01/01")
 	trade(sDate, vs)
 }
+

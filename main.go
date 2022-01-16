@@ -63,14 +63,13 @@ func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 	return true
 }
 
-func trade(sDate time.Time, cs systemtrade.CandleSticks) {
+func trade(sDate time.Time, cs systemtrade.CandleSticks,lc,lp float64) {
 
 	dmaNum := 10
 	skipc := 60
 	p := 0.0
 
-	//TODO 引数化
-	po := systemtrade.Position{Lc: 0.03, Lp: 0.10}
+	po := systemtrade.Position{Lc: lc, Lp: lp}
 	for i, v := range cs {
 		// fmt.Println(v.Date)
 		// fmt.Printf("%v", v)
@@ -168,6 +167,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 func main() {
 	var (
 		tDir = flag.String("tDir", "0", "target folder name")
+		lc = flag.Float64("lc", 0.3, "loss cut %")
+		lp = flag.Float64("lp", 0.07, "limit profit %")
 	)
 	flag.Parse()
 
@@ -187,6 +188,6 @@ func main() {
 	// cnt := 0
 	layout := "2006/01/02"
 	sDate, _ := time.Parse(layout, "2015/01/01")
-	trade(sDate, vs)
+	trade(sDate, vs, *lc, *lp)
 }
 

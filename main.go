@@ -33,7 +33,7 @@ func targetFiles(tDir string) (tFiles []string, err error) {
 func isDMAUp(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 
 	for j := 0; j < 1; j++ {
-		if cs.DMA(dmaNum, i-j) <= cs.DMA(dmaNum, i-(j+1)) {
+		if cs.DMA(10, i-j) <= cs.DMA(10, i-(j+1)) {
 			return false
 		}
 	}
@@ -43,13 +43,20 @@ func isDMAUp(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 			return false
 		}
 	}
+	/*
+	for j := 0; j < 1; j++ {
+		if cs.DMA(60, i-j) <= cs.DMA(60, i-(j+1)) {
+			return false
+		}
+	}
+	*/
 
 	return true
 }
 
 func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 	for j := 0; j < 1; j++ {
-		if cs.DMA(dmaNum, i-j) >= cs.DMA(dmaNum, i-(j+1)) {
+		if cs.DMA(10, i-j) >= cs.DMA(10, i-(j+1)) {
 			return false
 		}
 	}
@@ -59,6 +66,13 @@ func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 			return false
 		}
 	}
+	/*
+	for j := 0; j < 1; j++ {
+		if cs.DMA(60, i-j) >= cs.DMA(60, i-(j+1)) {
+			return false
+		}
+	}
+	*/
 
 	return true
 }

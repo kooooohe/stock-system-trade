@@ -44,11 +44,11 @@ func isDMAUp(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 		}
 	}
 	/*
-	for j := 0; j < 1; j++ {
-		if cs.DMA(60, i-j) <= cs.DMA(60, i-(j+1)) {
-			return false
+		for j := 0; j < 1; j++ {
+			if cs.DMA(60, i-j) <= cs.DMA(60, i-(j+1)) {
+				return false
+			}
 		}
-	}
 	*/
 
 	return true
@@ -67,17 +67,17 @@ func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 		}
 	}
 	/*
-	for j := 0; j < 1; j++ {
-		if cs.DMA(60, i-j) >= cs.DMA(60, i-(j+1)) {
-			return false
+		for j := 0; j < 1; j++ {
+			if cs.DMA(60, i-j) >= cs.DMA(60, i-(j+1)) {
+				return false
+			}
 		}
-	}
 	*/
 
 	return true
 }
 
-func trade(sDate time.Time, cs systemtrade.CandleSticks,lc,lp float64) {
+func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 
 	dmaNum := 10
 	skipc := 60
@@ -132,6 +132,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks,lc,lp float64) {
 		tmpDMA := 25
 		_ = tmpDMA
 		if wasDMAUp && wasStockUnderDMA {
+			// fmt.Println(v.Date)
+			// fmt.Println("TIMING!!!")
 			if v.High > yesterday.High {
 				p = yesterday.High + 1
 				if v.Start > yesterday.High {
@@ -153,6 +155,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks,lc,lp float64) {
 		}
 
 		if wasDMADown && wasStockOverDMA {
+			// fmt.Println(v.Date)
+			// fmt.Println("TIMING!!!")
 			if v.Low < yesterday.Low {
 				p = yesterday.Low - 1
 				if v.Start < yesterday.Low {
@@ -176,13 +180,25 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks,lc,lp float64) {
 	}
 
 	systemtrade.Result.Out()
+	todayStockUnderDMA := float64(cs[len(cs)-1].Low) < cs.DMA(dmaNum, len(cs)-1)
+	todayStockOverDMA := float64(cs[len(cs)-1].High) > cs.DMA(dmaNum, len(cs)-1)
+	todayDMAUp := isDMAUp(cs, dmaNum, len(cs)-1)
+	todayDMADown := isDMADown(cs, dmaNum, len(cs)-1)
+
+	if todayDMAUp && todayStockUnderDMA {
+		fmt.Println("[BUY SET TIMING!!!]")
+
+	}
+	if todayDMADown && todayStockOverDMA {
+		fmt.Println("[SHORTSELL SET TIMING!!!]")
+	}
 }
 
 func main() {
 	var (
 		tDir = flag.String("tDir", "0", "target folder name")
-		lc = flag.Float64("lc", 0.3, "loss cut %")
-		lp = flag.Float64("lp", 0.07, "limit profit %")
+		lc   = flag.Float64("lc", 0.3, "loss cut %")
+		lp   = flag.Float64("lp", 0.07, "limit profit %")
 	)
 	flag.Parse()
 
@@ -204,4 +220,3 @@ func main() {
 	sDate, _ := time.Parse(layout, "2015/01/01")
 	trade(sDate, vs, *lc, *lp)
 }
-

@@ -33,22 +33,30 @@ func targetFiles(tDir string) (tFiles []string, err error) {
 func isDMAUp(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 
 	for j := 0; j < 1; j++ {
-		if cs.DMA(dmaNum, i-j) <= cs.DMA(dmaNum, i-(j+1)) {
+		if cs.DMA(10, i-j) <= cs.DMA(10, i-(j+1)) {
 			return false
 		}
 	}
+
 	for j := 0; j < 1; j++ {
 		if cs.DMA(25, i-j) <= cs.DMA(25, i-(j+1)) {
 			return false
 		}
 	}
+	/*
+		for j := 0; j < 1; j++ {
+			if cs.DMA(60, i-j) <= cs.DMA(60, i-(j+1)) {
+				return false
+			}
+		}
+	*/
 
 	return true
 }
 
 func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 	for j := 0; j < 1; j++ {
-		if cs.DMA(dmaNum, i-j) >= cs.DMA(dmaNum, i-(j+1)) {
+		if cs.DMA(10, i-j) >= cs.DMA(10, i-(j+1)) {
 			return false
 		}
 	}
@@ -58,18 +66,27 @@ func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 			return false
 		}
 	}
+	/*
+		for j := 0; j < 1; j++ {
+			if cs.DMA(60, i-j) >= cs.DMA(60, i-(j+1)) {
+				return false
+			}
+		}
+	*/
 
 	return true
 }
 
-func trade(sDate time.Time, cs systemtrade.CandleSticks) {
+func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 
 	dmaNum := 10
 	skipc := 60
-	p := 0
+	p := 0.0
 
-	po := systemtrade.Position{Lc: 0.03, Lp: 0.07}
+	po := systemtrade.Position{Lc: lc, Lp: lp}
 	for i, v := range cs {
+		// fmt.Println(v.Date)
+		// fmt.Printf("%v", v)
 		// for DMA
 		if skipc > 0 || v.Date.Before(sDate) {
 			skipc--
@@ -87,6 +104,9 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 		yesterday := cs[i-1]
 		wasStockUnderDMA := float64(yesterday.Low) < cs.DMA(dmaNum, i-1)
 		wasStockOverDMA := float64(yesterday.High) > cs.DMA(dmaNum, i-1)
+		//TODO endにかえる？
+		// wasStockUnderDMA := float64(yesterday.End) < cs.DMA(dmaNum, i-1)
+		// wasStockOverDMA := float64(yesterday.End) > cs.DMA(dmaNum, i-1)
 
 		if po.IsBuying() {
 			_, per, ok := po.Sell(v)
@@ -109,7 +129,11 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 			continue
 		}
 
+		tmpDMA := 25
+		_ = tmpDMA
 		if wasDMAUp && wasStockUnderDMA {
+			// fmt.Println(v.Date)
+			// fmt.Println("TIMING!!!")
 			if v.High > yesterday.High {
 				p = yesterday.High + 1
 				if v.Start > yesterday.High {
@@ -118,9 +142,21 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				po.Buy(p, v)
 				fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
+			/*
+				if v.High > cs.DMA(tmpDMA, i-1) {
+					p = cs.DMA(tmpDMA, i-1) + 1
+					if v.Start > cs.DMA(tmpDMA, i-1) {
+						p = v.Start
+					}
+					po.Buy(p, v)
+					fmt.Printf("Buy: %v: %v\n", v.Date, p)
+				}
+			*/
 		}
 
 		if wasDMADown && wasStockOverDMA {
+			// fmt.Println(v.Date)
+			// fmt.Println("TIMING!!!")
 			if v.Low < yesterday.Low {
 				p = yesterday.Low - 1
 				if v.Start < yesterday.Low {
@@ -129,18 +165,40 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks) {
 				po.ShortSell(p, v)
 				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
+			/*
+				if v.Low < cs.DMA(tmpDMA, i-1) {
+					p = cs.DMA(tmpDMA, i-1) - 1
+					if v.Start < cs.DMA(tmpDMA, i-1) {
+						p = v.Start
+					}
+					po.ShortSell(p, v)
+					fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
+				}
+			*/
 		}
 
 	}
 
-	//TODO 勝ち数、負け数、一年ごとの結果すべて出す
 	systemtrade.Result.Out()
-	// vs.DMA(10)
+	todayStockUnderDMA := float64(cs[len(cs)-1].Low) < cs.DMA(dmaNum, len(cs)-1)
+	todayStockOverDMA := float64(cs[len(cs)-1].High) > cs.DMA(dmaNum, len(cs)-1)
+	todayDMAUp := isDMAUp(cs, dmaNum, len(cs)-1)
+	todayDMADown := isDMADown(cs, dmaNum, len(cs)-1)
+
+	if todayDMAUp && todayStockUnderDMA {
+		fmt.Println("[BUY SET TIMING!!!]")
+
+	}
+	if todayDMADown && todayStockOverDMA {
+		fmt.Println("[SHORTSELL SET TIMING!!!]")
+	}
 }
 
 func main() {
 	var (
 		tDir = flag.String("tDir", "0", "target folder name")
+		lc   = flag.Float64("lc", 0.3, "loss cut %")
+		lp   = flag.Float64("lp", 0.07, "limit profit %")
 	)
 	flag.Parse()
 
@@ -160,5 +218,5 @@ func main() {
 	// cnt := 0
 	layout := "2006/01/02"
 	sDate, _ := time.Parse(layout, "2015/01/01")
-	trade(sDate, vs)
+	trade(sDate, vs, *lc, *lp)
 }

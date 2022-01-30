@@ -186,10 +186,12 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 	todayDMADown := isDMADown(cs, dmaNum, len(cs)-1)
 
 	if todayDMAUp && todayStockUnderDMA {
+		fmt.Println(cs[len(cs)-1].Date)
 		fmt.Println("[BUY SET TIMING!!!]")
 
 	}
 	if todayDMADown && todayStockOverDMA {
+		fmt.Println(cs[len(cs)-1].Date)
 		fmt.Println("[SHORTSELL SET TIMING!!!]")
 	}
 }
@@ -217,6 +219,6 @@ func main() {
 	// fmt.Println(vs)
 	// cnt := 0
 	layout := "2006/01/02"
-	sDate, _ := time.Parse(layout, "2015/01/01")
+	sDate, _ := time.Parse(layout, "2013/01/01")
 	trade(sDate, vs, *lc, *lp)
 }

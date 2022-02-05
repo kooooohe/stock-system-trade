@@ -125,7 +125,7 @@ func (s Score) Out() {
 
 	for _, v := range s.recodes {
 		if v.StartDate().Year() != tYear {
-			fmt.Printf("【YAER】: %v\n", tYear)
+			fmt.Printf("【YEAR】: %v\n", tYear)
 			fmt.Printf("win:  %v (buy: %v shortsell: %v)\n", winB+winS, winB, winS)
 			fmt.Printf("lose: %v (buy: %v shortsell: %v)\n", loseB+loseS, loseB, loseS)
 			fmt.Printf("sum: %v\n\n", sum)
@@ -173,7 +173,7 @@ func (s Score) Out() {
 
 	}
 
-	fmt.Printf("【YAER】: %v\n", s.recodes[len(s.recodes)-1].StartDate().Year())
+	fmt.Printf("【YEAR】: %v\n", s.recodes[len(s.recodes)-1].StartDate().Year())
 	fmt.Printf("win: %v (buy: %v shortsell: %v)\n", winB+winS, winB, winS)
 	fmt.Printf("lose: %v (buy: %v shortsell: %v)\n", loseB+loseS, loseB, loseS)
 	fmt.Printf("sum: %v\n\n", sum)

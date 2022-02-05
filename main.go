@@ -111,7 +111,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 		if po.IsBuying() {
 			_, per, ok := po.Sell(v)
 			if ok {
-				println("SELL END")
+				fmt.Println("SELL END")
 				fmt.Println(v.Date)
 				fmt.Println(per)
 
@@ -122,7 +122,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 			_, per, ok := po.BuyBack(v)
 
 			if ok {
-				println("BUYBUCK END")
+				fmt.Println("BUYBUCK END")
 				fmt.Println(v.Date)
 				fmt.Println(per)
 			}

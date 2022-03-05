@@ -314,20 +314,33 @@ func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 }
 
 func (po Position) lossCutPrice() float64 {
+	t := 0.0
 	if po.t == buy {
-		r := po.price * (1 - po.Lc)
-		return r
+		t = 1 - po.Lc
+	} else {
+		// sell
+		t = 1 + po.Lc
 	}
-	// sell
-	return po.price * (1 + po.Lc)
+	// 1のくらいで切り捨て
+	r := math.Floor(po.price * t)
+	// TODO
+	one := int(r) % 10
+	// r := (po.price * t) / 10
+
+	return math.Floor(r) * 10
 }
 
 func (po Position) profitPrice() float64 {
+	t := 0.0
 	if po.t == buy {
-		return po.price * (1 + po.Lp)
+		t = 1 + po.Lp
+	} else {
+		// sell
+		t = 1 - po.Lp
 	}
-	// sell
-	return po.price * (1 - po.Lp)
+	// TODO
+	r := (po.price * t) / 10
+	return math.Floor(r) * 10
 }
 
 func (po Position) IsDoing() bool {

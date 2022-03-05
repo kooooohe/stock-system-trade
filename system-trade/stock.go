@@ -259,27 +259,27 @@ func (po *Position) BuyBack(c CandleStick) (float64, float64, bool) {
 func (po *Position) sell(c CandleStick) (float64, float64, bool) {
 
 	// LC
-	if float64(c.Start) <= po.lossCutPrice() {
-		r := -(1.0 - float64(c.Start)/float64(po.price))
+	if c.Start <= po.lossCutPrice() {
+		r := -(1.0 - c.Start/po.price)
 		return c.Start - po.price, r, true
 	}
 
 	// LC
-	if float64(c.Low) <= po.lossCutPrice() {
+	if c.Low <= po.lossCutPrice() {
 		r := -po.Lc
-		return math.Ceil(float64(po.price) * po.Lc), r, true
+		return math.Ceil(po.price * po.Lc), r, true
 	}
 
 	// PROFIT
-	if float64(c.Start) >= po.profitPrice() {
-		r := (float64(c.Start)/float64(po.price) - 1)
+	if c.Start >= po.profitPrice() {
+		r := (c.Start/po.price - 1)
 		return c.Start - po.price, r, true
 	}
 
 	// PROFIT
-	if float64(c.High) >= po.profitPrice() {
+	if c.High >= po.profitPrice() {
 		r := po.Lp
-		return math.Ceil(float64(po.price) * po.Lp), r, true
+		return math.Ceil(po.price * po.Lp), r, true
 	}
 
 	return 0, 0.0, false
@@ -287,27 +287,27 @@ func (po *Position) sell(c CandleStick) (float64, float64, bool) {
 
 func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 	// LC
-	if float64(c.Start) >= po.lossCutPrice() {
-		r := -(1.0 - float64(po.price)/float64(c.Start))
+	if c.Start >= po.lossCutPrice() {
+		r := -(1.0 - po.price/c.Start)
 		return -(c.Start - po.price), r, true
 	}
 
 	// LC
-	if float64(c.High) >= po.lossCutPrice() {
+	if c.High >= po.lossCutPrice() {
 		r := -po.Lc
-		return math.Ceil(float64(po.price) * po.Lc), r, true
+		return math.Ceil(po.price * po.Lc), r, true
 	}
 
 	// PROFIT
-	if float64(c.Start) <= po.profitPrice() {
-		r := (float64(po.price)/float64(c.Start) - 1)
+	if c.Start <= po.profitPrice() {
+		r := (po.price/c.Start - 1)
 		return -(c.Start - po.price), r, true
 	}
 
 	// PROFIT
-	if float64(c.Low) <= po.profitPrice() {
+	if c.Low <= po.profitPrice() {
 		r := po.Lp
-		return math.Ceil(float64(po.price) * po.Lp), r, true
+		return math.Ceil(po.price * po.Lp), r, true
 	}
 
 	return 0, 0.0, false
@@ -315,18 +315,19 @@ func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 
 func (po Position) lossCutPrice() float64 {
 	if po.t == buy {
-		return float64(po.price) * (1 - po.Lc)
+		r := po.price * (1 - po.Lc)
+		return r
 	}
 	// sell
-	return float64(po.price) * (1 + po.Lc)
+	return po.price * (1 + po.Lc)
 }
 
 func (po Position) profitPrice() float64 {
 	if po.t == buy {
-		return float64(po.price) * (1 + po.Lp)
+		return po.price * (1 + po.Lp)
 	}
 	// sell
-	return float64(po.price) * (1 - po.Lp)
+	return po.price * (1 - po.Lp)
 }
 
 func (po Position) IsDoing() bool {

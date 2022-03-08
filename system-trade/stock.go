@@ -266,7 +266,8 @@ func (po *Position) sell(c CandleStick) (float64, float64, bool) {
 
 	// LC
 	if c.Low <= po.lossCutPrice() {
-		r := -po.Lc
+		r := 1-(po.lossCutPrice() / po.price)
+		r*=-1
 		return math.Ceil(po.price * po.Lc), r, true
 	}
 
@@ -278,7 +279,7 @@ func (po *Position) sell(c CandleStick) (float64, float64, bool) {
 
 	// PROFIT
 	if c.High >= po.profitPrice() {
-		r := po.Lp
+		r := (po.profitPrice()/po.price - 1)
 		return math.Ceil(po.price * po.Lp), r, true
 	}
 
@@ -294,7 +295,7 @@ func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 
 	// LC
 	if c.High >= po.lossCutPrice() {
-		r := -po.Lc
+		r := - (po.lossCutPrice()/po.price -1)
 		return math.Ceil(po.price * po.Lc), r, true
 	}
 
@@ -306,7 +307,7 @@ func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 
 	// PROFIT
 	if c.Low <= po.profitPrice() {
-		r := po.Lp
+		r := (po.price/po.profitPrice() - 1)
 		return math.Ceil(po.price * po.Lp), r, true
 	}
 
@@ -323,11 +324,15 @@ func (po Position) lossCutPrice() float64 {
 	}
 	// 1のくらいで切り捨て
 	r := math.Floor(po.price * t)
-	// TODO
-	one := int(r) % 10
+	// TODO tick 考慮できてない
+	tmp := int(r) % 5
+	if tmp >= 3 {
+		tmp = -(5 - 3)
+	}
+	r -= float64(tmp)
 	// r := (po.price * t) / 10
 
-	return math.Floor(r) * 10
+	return r
 }
 
 func (po Position) profitPrice() float64 {
@@ -338,9 +343,14 @@ func (po Position) profitPrice() float64 {
 		// sell
 		t = 1 - po.Lp
 	}
-	// TODO
-	r := (po.price * t) / 10
-	return math.Floor(r) * 10
+	r := math.Floor(po.price * t)
+	// TODO tick 考慮できてない
+	tmp := int(r) % 5
+	if tmp >= 3 {
+		tmp = -(5 - 3)
+	}
+	r -= float64(tmp)
+	return r
 }
 
 func (po Position) IsDoing() bool {

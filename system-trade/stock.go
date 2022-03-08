@@ -211,6 +211,7 @@ type Position struct {
 	price float64
 	Lc    float64
 	Lp    float64 //指値
+	Tick  float64
 }
 
 func (po *Position) Buy(p float64, c CandleStick) {
@@ -266,8 +267,8 @@ func (po *Position) sell(c CandleStick) (float64, float64, bool) {
 
 	// LC
 	if c.Low <= po.lossCutPrice() {
-		r := 1-(po.lossCutPrice() / po.price)
-		r*=-1
+		r := 1 - (po.lossCutPrice() / po.price)
+		r *= -1
 		return math.Ceil(po.price * po.Lc), r, true
 	}
 
@@ -295,7 +296,7 @@ func (po *Position) buyBack(c CandleStick) (float64, float64, bool) {
 
 	// LC
 	if c.High >= po.lossCutPrice() {
-		r := - (po.lossCutPrice()/po.price -1)
+		r := -(po.lossCutPrice()/po.price - 1)
 		return math.Ceil(po.price * po.Lc), r, true
 	}
 
@@ -322,17 +323,20 @@ func (po Position) lossCutPrice() float64 {
 		// sell
 		t = 1 + po.Lc
 	}
-	// 1のくらいで切り捨て
-	r := math.Floor(po.price * t)
-	// TODO tick 考慮できてない
-	tmp := int(r) % 5
-	if tmp >= 3 {
-		tmp = -(5 - 3)
-	}
-	r -= float64(tmp)
-	// r := (po.price * t) / 10
 
-	return r
+	// TODO
+	if po.Tick == 5 {
+		// 1のくらいで切り捨て
+		r := math.Floor(po.price * t)
+		// TODO tick 考慮できてない
+		tmp := int(r) % 5
+		if tmp >= 3 {
+			tmp = -(5 - 3)
+		}
+		r -= float64(tmp)
+		return r
+	}
+	return po.price * t
 }
 
 func (po Position) profitPrice() float64 {
@@ -343,14 +347,18 @@ func (po Position) profitPrice() float64 {
 		// sell
 		t = 1 - po.Lp
 	}
-	r := math.Floor(po.price * t)
-	// TODO tick 考慮できてない
-	tmp := int(r) % 5
-	if tmp >= 3 {
-		tmp = -(5 - 3)
+	if po.Tick == 5 {
+		r := math.Floor(po.price * t)
+		// TODO tick 考慮できてない
+		tmp := int(r) % 5
+		if tmp >= 3 {
+			tmp = -(5 - 3)
+		}
+		r -= float64(tmp)
+
+		return r
 	}
-	r -= float64(tmp)
-	return r
+	return po.price * t
 }
 
 func (po Position) IsDoing() bool {

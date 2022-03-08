@@ -77,13 +77,13 @@ func isDMADown(cs systemtrade.CandleSticks, dmaNum, i int) bool {
 	return true
 }
 
-func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
+func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp, tick float64) {
 
 	dmaNum := 10
 	skipc := 60
 	p := 0.0
 
-	po := systemtrade.Position{Lc: lc, Lp: lp}
+	po := systemtrade.Position{Lc: lc, Lp: lp, Tick:tick} 
 	for i, v := range cs {
 		// fmt.Println(v.Date)
 		// fmt.Printf("%v", v)
@@ -111,8 +111,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 		if po.IsBuying() {
 			_, per, ok := po.Sell(v)
 			if ok {
-				fmt.Println("SELL END")
-				fmt.Println(v.Date)
+				// fmt.Println("SELL END")
+				// fmt.Println(v.Date)
 				fmt.Println(per)
 
 			}
@@ -122,8 +122,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 			_, per, ok := po.BuyBack(v)
 
 			if ok {
-				fmt.Println("BUYBUCK END")
-				fmt.Println(v.Date)
+				//fmt.Println("BUYBUCK END")
+				//fmt.Println(v.Date)
 				fmt.Println(per)
 			}
 			continue
@@ -140,7 +140,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 					p = v.Start
 				}
 				po.Buy(p, v)
-				fmt.Printf("Buy: %v: %v\n", v.Date, p)
+				// fmt.Printf("Buy: %v: %v\n", v.Date, p)
 			}
 			/*
 				if v.High > cs.DMA(tmpDMA, i-1) {
@@ -163,7 +163,7 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp float64) {
 					p = v.Start
 				}
 				po.ShortSell(p, v)
-				fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
+				// fmt.Printf("ShortSell: %v: %v\n", v.Date, p)
 			}
 			/*
 				if v.Low < cs.DMA(tmpDMA, i-1) {
@@ -201,6 +201,7 @@ func main() {
 		tDir = flag.String("tDir", "0", "target folder name")
 		lc   = flag.Float64("lc", 0.3, "loss cut %")
 		lp   = flag.Float64("lp", 0.07, "limit profit %")
+		tick   = flag.Float64("tick", 1, "tick")
 	)
 	flag.Parse()
 
@@ -220,5 +221,5 @@ func main() {
 	// cnt := 0
 	layout := "2006/01/02"
 	sDate, _ := time.Parse(layout, "2013/01/01")
-	trade(sDate, vs, *lc, *lp)
+	trade(sDate, vs, *lc, *lp, *tick)
 }

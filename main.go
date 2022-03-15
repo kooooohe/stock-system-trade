@@ -134,8 +134,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp, tick float64) {
 		if wasDMAUp && wasStockUnderDMA {
 			// fmt.Println(v.Date)
 			// fmt.Println("TIMING!!!")
-			if v.High > yesterday.High {
-				p = yesterday.High + 1
+			if v.High >= yesterday.High {
+				p = yesterday.High
 				if v.Start > yesterday.High {
 					p = v.Start
 				}
@@ -157,8 +157,8 @@ func trade(sDate time.Time, cs systemtrade.CandleSticks, lc, lp, tick float64) {
 		if wasDMADown && wasStockOverDMA {
 			// fmt.Println(v.Date)
 			// fmt.Println("TIMING!!!")
-			if v.Low < yesterday.Low {
-				p = yesterday.Low - 1
+			if v.Low <= yesterday.Low {
+				p = yesterday.Low
 				if v.Start < yesterday.Low {
 					p = v.Start
 				}
